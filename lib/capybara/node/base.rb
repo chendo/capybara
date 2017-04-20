@@ -81,6 +81,7 @@ module Capybara
           yield
         else
           session.synchronized = true
+          wait_interval = Capybara.initial_wait_interval
           begin
             yield
           rescue => e
@@ -88,11 +89,16 @@ module Capybara
             raise e unless driver.wait?
             raise e unless catch_error?(e, options[:errors])
             raise e if (Capybara::Helpers.monotonic_time - start_time) >= seconds
-            sleep(0.05)
+            sleep(wait_interval)
             raise Capybara::FrozenInTime, "time appears to be frozen, Capybara does not work with libraries which freeze time, consider using time travelling instead" if Capybara::Helpers.monotonic_time == start_time
             reload if Capybara.automatic_reload
+            next_interval = Capybara.wait_interval_proc.call(wait_interval)
+            if next_interval < Capybara.max_wait_interval
+              wait_interval = next_interval
+            end
             retry
           ensure
+            Capybara.final_wait_interval_proc.call(wait_interval)
             session.synchronized = false
           end
         end

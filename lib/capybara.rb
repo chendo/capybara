@@ -31,6 +31,7 @@ module Capybara
     attr_reader :save_and_open_page_path
     attr_accessor :exact_text
     attr_accessor :app
+    attr_accessor :initial_wait_interval, :max_wait_interval, :wait_interval_proc, :final_wait_interval_proc
 
     ##
     #
@@ -491,6 +492,10 @@ Capybara.configure do |config|
   config.server = :default
   config.default_selector = :css
   config.default_max_wait_time = 2
+  config.initial_wait_interval = 0.05
+  config.max_wait_interval = 1
+  config.wait_interval_proc = -> (previous_value) { previous_value * 2 }
+  config.final_wait_interval_proc = -> (interval) { }
   config.ignore_hidden_elements = true
   config.default_host = "http://www.example.com"
   config.automatic_reload = true
